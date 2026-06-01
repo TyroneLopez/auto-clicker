@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#080c10"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="AutoClick Pro"/>
+  <title>AutoClicker Pro v4</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#080c10; --panel:#0d1318; --card:#111820; --card2:#141e26;
+      --border:#1e2d3a; --bord2:#243342; --accent:#00c9ff; --green:#00ff99;
+      --yellow:#ffcc00; --red:#ff4455; --orange:#ff8c42; --purple:#c084fc;
+      --dim:#3a5068; --muted:#4a6278; --text:#c8dce8; --bright:#e8f4fc;
+      --mono:'Share Tech Mono',monospace; --head:'Rajdhani',sans-serif;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+    body{display:flex;flex-direction:column;color:var(--text);font-family:var(--head);font-size:14px;padding-top:var(--safe-top);}
+
+    /* HEADER */
+    .hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:linear-gradient(135deg,#0d1a24,#0a1520);border-bottom:1px solid var(--border);flex-shrink:0;}
+    .hdr-left{display:flex;align-items:center;gap:10px;}
+    .logo-ring{width:28px;height:28px;border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(0,201,255,0.25);}
+    .logo-ring::after{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 6px var(--accent);}
+    .logo-title{font-size:16px;font-weight:700;letter-spacing:0.1em;color:var(--bright);}
+    .logo-title span{color:var(--accent);}
+    .logo-sub{font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:0.08em;margin-top:1px;}
+    .hdr-stats{display:flex;gap:16px;}
+    .stat{text-align:center;}
+    .stat-n{font-family:var(--mono);font-size:20px;font-weight:700;line-height:1;}
+    .stat-l{font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:0.1em;}
+    .stat.green .stat-n{color:var(--green);text-shadow:0 0 8px rgba(0,255,153,0.4);}
+    .stat.yellow .stat-n{color:var(--yellow);}
+
+    /* INFO BAR - mobile notice */
+    .info-bar{display:flex;align-items:center;gap:7px;padding:6px 14px;background:rgba(0,201,255,0.07);border-bottom:1px solid rgba(0,201,255,0.15);font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:0.06em;flex-shrink:0;}
+    .info-bar svg{flex-shrink:0;opacity:0.7;}
+
+    /* TABS */
+    .tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;}
+    .tab{flex:1;padding:10px 4px;font-size:12px;font-weight:600;letter-spacing:0.07em;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all 0.15s;user-select:none;}
+    .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+    .tab:active{background:rgba(255,255,255,0.03);}
+
+    /* GLOBAL CONTROLS BAR */
+    .ctrl-bar{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;}
+    .ctrl-label{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.06em;}
+    .global-btns{display:flex;gap:6px;}
+    .gbtn{padding:5px 10px;border-radius:4px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid var(--bord2);background:transparent;color:var(--muted);transition:all 0.12s;letter-spacing:0.05em;min-height:32px;}
+    .gbtn:active{background:rgba(0,201,255,0.1);border-color:var(--accent);color:var(--accent);}
+    .gbtn.danger:active{background:rgba(255,68,85,0.1);border-color:var(--red);color:var(--red);}
+
+    /* PAGES */
+    .page{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;}
+    .page.active{display:flex;}
+
+    /* PROFILES PAGE */
+    .profiles-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px;display:flex;flex-direction:column;gap:8px;}
+    .profiles-scroll::-webkit-scrollbar{width:3px;}
+    .profiles-scroll::-webkit-scrollbar-thumb{background:var(--bord2);}
+    .add-btn-wrap{padding:8px;flex-shrink:0;border-top:1px solid var(--border);padding-bottom:calc(8px + var(--safe-bottom));}
+    .add-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border:1px dashed var(--bord2);border-radius:6px;background:transparent;color:var(--muted);font-family:var(--head);font-size:13px;font-weight:600;letter-spacing:0.1em;cursor:pointer;transition:all 0.15s;min-height:44px;}
+    .add-btn:active{border-color:var(--accent);color:var(--accent);background:rgba(0,201,255,0.04);}
+
+    /* PROFILE CARD */
+    .pcard{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:border-color 0.2s;flex-shrink:0;}
+    .pcard.running{border-color:var(--accent);}
+    .pcard.paused{border-color:var(--yellow);}
+    .pcard.running .cbar{background:var(--accent);animation:bp 1.5s infinite;}
+    .pcard.paused .cbar{background:var(--yellow);}
+    @keyframes bp{0%,100%{opacity:1}50%{opacity:0.4}}
+    .cbar{height:2px;background:var(--bord2);}
+
+    .chead{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;user-select:none;min-height:48px;}
+    .cdot{width:8px;height:8px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:all 0.2s;}
+    .pcard.running .cdot{background:var(--green);box-shadow:0 0 6px rgba(0,255,153,0.6);animation:dp 1.2s infinite;}
+    .pcard.paused .cdot{background:var(--yellow);}
+    @keyframes dp{0%,100%{opacity:1}50%{opacity:0.3}}
+    .cname{flex:1;font-size:14px;font-weight:600;color:var(--bright);background:transparent;border:none;outline:none;cursor:text;font-family:var(--head);min-width:0;}
+    .cname:focus{color:var(--accent);}
+    .cmeta{font-family:var(--mono);font-size:9px;color:var(--muted);white-space:nowrap;}
+    .pcard.running .cmeta{color:var(--accent);}
+    .pcard.paused .cmeta{color:var(--yellow);}
+    .ccount{font-family:var(--mono);font-size:10px;color:var(--green);min-width:38px;text-align:right;}
+    .cchev{font-family:var(--mono);font-size:9px;color:var(--dim);padding-left:4px;}
+
+    .cbody{display:none;padding:0 12px 12px;border-top:1px solid var(--border);}
+    .cbody.open{display:block;}
+
+    /* FIELDS */
+    .frow{display:flex;gap:8px;align-items:flex-end;margin-top:10px;}
+    .f{flex:1;min-width:0;}
+    .flabel{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.08em;margin-bottom:4px;}
+    input[type=text],input[type=number],select{
+      width:100%;background:var(--card2);border:1px solid var(--bord2);border-radius:4px;
+      color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 9px;outline:none;
+      transition:border-color 0.15s;min-height:40px;-webkit-appearance:none;appearance:none;
+    }
+    input[type=number]{-moz-appearance:textfield;}
+    input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
+    input:focus,select:focus{border-color:var(--accent);}
+    input::placeholder{color:var(--dim);font-size:10px;}
+    select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a6278'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
+
+    /* ACTION MODE */
+    .mode-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;}
+    .mchip{flex:1;min-width:72px;padding:8px 4px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.04em;cursor:pointer;border:1px solid var(--bord2);background:var(--card2);color:var(--muted);transition:all 0.15s;text-align:center;font-family:var(--head);min-height:36px;}
+    .mchip.sel{border-color:var(--accent);color:var(--accent);background:rgba(0,201,255,0.08);}
+    .mchip:active{opacity:0.7;}
+
+    /* KEY CAPTURE — touch friendly */
+    .key-section{margin-top:10px;}
+    .key-capture-wrap{display:flex;gap:8px;align-items:stretch;}
+    .key-display{
+      flex:1;padding:10px 12px;background:var(--card2);border:1px solid var(--bord2);border-radius:4px;
+      font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green);
+      text-align:center;cursor:pointer;transition:all 0.15s;letter-spacing:0.1em;min-height:46px;
+      display:flex;align-items:center;justify-content:center;user-select:none;
+    }
+    .key-display.listening{border-color:var(--accent);color:var(--accent);animation:kp 0.8s infinite;}
+    @keyframes kp{0%,100%{opacity:1}50%{opacity:0.4}}
+    /* Hidden real input for mobile keyboard */
+    .key-hidden-input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;top:-9999px;}
+
+    /* Manual key entry */
+    .key-manual-input{display:none;flex:1;}
+    .key-manual-input.show{display:flex;flex-direction:column;}
+
+    .hold-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+    .hold-row input[type=range]{flex:1;accent-color:var(--orange);background:transparent;border:none;padding:0;min-height:24px;}
+    .hold-val{font-family:var(--mono);font-size:10px;color:var(--orange);min-width:44px;text-align:right;}
+    .hold-label{font-family:var(--mono);font-size:9px;color:var(--muted);}
+
+    /* XY section */
+    .xy-info{margin-top:8px;padding:8px 10px;background:rgba(255,140,66,0.08);border:1px solid rgba(255,140,66,0.25);border-radius:4px;font-family:var(--mono);font-size:9px;color:var(--orange);line-height:1.7;}
+    .xy-info b{color:#ffb07a;}
+    .xy-coords-row{margin-top:8px;display:flex;gap:8px;}
+
+    /* INTERVAL + JITTER */
+    .ival-wrap{display:flex;gap:5px;}
+    .ival-wrap input{font-size:15px;font-weight:700;}
+    .jrow{display:flex;align-items:center;gap:8px;margin-top:10px;}
+    .jrow input[type=range]{flex:1;accent-color:var(--accent);background:transparent;border:none;padding:0;min-height:24px;}
+    .jval{font-family:var(--mono);font-size:10px;color:var(--accent);min-width:34px;text-align:right;}
+
+    /* CONDITION */
+    .cond-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.08em;padding:8px 0;margin-top:6px;}
+    .cond-toggle input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);margin:0;flex-shrink:0;}
+    .cond-body{display:none;margin-top:6px;}.cond-body.open{display:block;}
+    .tag-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+    .tag{background:var(--card2);border:1px solid var(--bord2);border-radius:3px;font-family:var(--mono);font-size:9px;color:var(--muted);padding:4px 8px;cursor:pointer;transition:all 0.1s;min-height:28px;display:flex;align-items:center;}
+    .tag.sel{background:rgba(0,201,255,0.12);border-color:var(--accent);color:var(--accent);}
+
+    /* CARD ACTIONS */
+    .cactions{display:flex;gap:7px;margin-top:12px;}
+    .btn{flex:1;padding:10px;border-radius:4px;font-family:var(--head);font-size:12px;font-weight:600;letter-spacing:0.08em;cursor:pointer;border:1px solid transparent;transition:all 0.15s;text-align:center;min-height:42px;user-select:none;}
+    .btn-start{background:rgba(0,255,153,0.08);border-color:var(--green);color:var(--green);}
+    .btn-start:active{background:rgba(0,255,153,0.2);}
+    .btn-stop{background:rgba(255,68,85,0.08);border-color:var(--red);color:var(--red);}
+    .btn-stop:active{background:rgba(255,68,85,0.2);}
+    .btn-pause{background:rgba(255,204,0,0.08);border-color:var(--yellow);color:var(--yellow);}
+    .btn-pause:active{background:rgba(255,204,0,0.2);}
+    .btn-sm{flex:0 0 42px;background:var(--card2);border-color:var(--bord2);color:var(--muted);font-size:14px;}
+    .btn-sm:active{border-color:var(--red);color:var(--red);}
+
+    /* LOG PAGE */
+    .log-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .log-title{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;}
+    .log-clear{padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:9px;cursor:pointer;border:1px solid var(--bord2);background:transparent;color:var(--muted);}
+    .log-clear:active{border-color:var(--red);color:var(--red);}
+    .log-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 12px;font-family:var(--mono);font-size:10px;line-height:2;padding-bottom:calc(8px + var(--safe-bottom));}
+    .log-scroll::-webkit-scrollbar{width:3px;}
+    .log-scroll::-webkit-scrollbar-thumb{background:var(--bord2);}
+    .logrow{display:flex;gap:8px;}
+    .logt{color:var(--dim);flex-shrink:0;}
+    .logm.click{color:var(--green);}.logm.stop{color:var(--red);}.logm.info{color:var(--accent);}.logm.warn{color:var(--yellow);}.logm.xy{color:var(--orange);}.logm.key{color:var(--purple);}
+
+    /* HELP PAGE */
+    .help-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px;padding-bottom:calc(14px + var(--safe-bottom));}
+    .help-scroll::-webkit-scrollbar{width:3px;}
+    .help-scroll::-webkit-scrollbar-thumb{background:var(--bord2);}
+    .hs{margin-bottom:18px;}
+    .ht{font-size:12px;font-weight:700;letter-spacing:0.1em;color:var(--accent);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+    .hb{font-family:var(--mono);font-size:10px;color:var(--text);line-height:2;}
+    .hb code{background:var(--card2);border:1px solid var(--border);padding:1px 6px;border-radius:2px;color:var(--yellow);}
+    .hb b{color:var(--orange);}
+
+    /* NOTICE BOX */
+    .notice{margin:12px;padding:12px 14px;background:rgba(255,140,66,0.08);border:1px solid rgba(255,140,66,0.2);border-radius:6px;font-family:var(--mono);font-size:10px;color:var(--orange);line-height:1.8;}
+    .notice b{color:#ffb07a;display:block;margin-bottom:4px;}
+
+    /* Empty state */
+    .empty{padding:30px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:10px;line-height:2;}
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="logo-ring"></div>
+    <div>
+      <div class="logo-title">AUTO<span>CLICK</span> PRO</div>
+      <div class="logo-sub">v4.0 MOBILE · KEY / CLICK SCHEDULER</div>
+    </div>
+  </div>
+  <div class="hdr-stats">
+    <div class="stat green"><div class="stat-n" id="statActive">0</div><div class="stat-l">ACTIVE</div></div>
+    <div class="stat yellow"><div class="stat-n" id="statPaused">0</div><div class="stat-l">PAUSED</div></div>
+  </div>
+</div>
+
+<!-- INFO BAR -->
+<div class="info-bar">
+  <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 7v5M8 5v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  MOBILE MODE — RUNS ON THIS TAB · ACTIONS SIMULATE ON CURRENT PAGE
+</div>
+
+<!-- GLOBAL CONTROLS BAR -->
+<div class="ctrl-bar">
+  <span class="ctrl-label">GLOBAL</span>
+  <div class="global-btns">
+    <button class="gbtn" id="pauseAllBtn">⏸ ALL</button>
+    <button class="gbtn danger" id="stopAllBtn">■ STOP ALL</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" data-tab="profiles">⚔ PROFILES</div>
+  <div class="tab" data-tab="log">📋 LOG</div>
+  <div class="tab" data-tab="help">? HELP</div>
+</div>
+
+<!-- PROFILES PAGE -->
+<div class="page active" id="page-profiles">
+  <div class="profiles-scroll" id="profilesList"></div>
+  <div class="add-btn-wrap">
+    <button class="add-btn" id="addBtn">＋ ADD PROFILE</button>
+  </div>
+</div>
+
+<!-- LOG PAGE -->
+<div class="page" id="page-log">
+  <div class="log-header">
+    <span class="log-title">EVENT LOG</span>
+    <button class="log-clear" id="clearLogBtn">CLEAR</button>
+  </div>
+  <div class="log-scroll" id="logWrap">
+    <div class="logrow"><span class="logt">--:--:--</span><span class="logm info">AutoClicker Pro v4 Mobile ready.</span></div>
+  </div>
+</div>
+
+<!-- HELP PAGE -->
+<div class="page" id="page-help">
+  <div class="help-scroll">
+    <div class="notice">
+      <b>📱 Mobile / Tablet Edition</b>
+      This is a standalone web app — no browser extension needed. Open it in Chrome or Safari, then <b>add to Home Screen</b> for the best experience. Actions (key presses, clicks) are simulated on <b>elements in this same page/tab</b>.
+    </div>
+    <div class="hs">
+      <div class="ht">⌨ KEY PRESS MODE</div>
+      <div class="hb">
+        Tap the key box to enter a key.<br>
+        On mobile, type the key in the input field shown.<br>
+        Common keys: <code>1</code> <code>2</code> <code>Space</code> <code>F1</code> <code>q</code><br><br>
+        <b>Press</b> — dispatches keydown + keyup once per interval.<br>
+        <b>Hold</b> — dispatches keydown, waits N ms, then keyup.
+      </div>
+    </div>
+    <div class="hs">
+      <div class="ht">🎮 FLYFF / MMO SETUP</div>
+      <div class="hb">
+        Best used with an emulator or web-based game on the same tab.<br><br>
+        <b>Heap</b> 120s · <b>Geburah</b> 180s · <b>Protect</b> 60s<br>
+        <b>Refresher</b> 25s · <b>Gvur Tialla</b> 300s<br><br>
+        Set jitter 10–20% to avoid bot detection.
+      </div>
+    </div>
+    <div class="hs">
+      <div class="ht">🎯 ACTION MODES</div>
+      <div class="hb">
+        <b>Key Press</b> — dispatch key event once<br>
+        <b>Key Hold</b> — dispatch keydown, hold N ms, keyup<br>
+        <b>Left Click</b> — MouseEvent click at XY or selector<br>
+        <b>Right Click</b> — contextmenu event<br>
+        <b>Double Click</b> — dblclick event<br>
+        <b>XY Coords</b> — click at exact pixel coordinates
+      </div>
+    </div>
+    <div class="hs">
+      <div class="ht">📐 XY COORDINATES</div>
+      <div class="hb">
+        Enter X and Y pixel coordinates manually.<br>
+        To find them: open browser DevTools → Console,<br>
+        then run: <code>document.addEventListener('click', e => console.log(e.clientX, e.clientY))</code><br>
+        and tap the target element.
+      </div>
+    </div>
+    <div class="hs">
+      <div class="ht">💾 SAVE / LOAD</div>
+      <div class="hb">
+        Profiles auto-save to your browser's localStorage.<br>
+        They persist across sessions on the same device/browser.
+      </div>
+    </div>
+    <div class="hs">
+      <div class="ht">⚙ INSTALL AS APP</div>
+      <div class="hb">
+        <b>Android Chrome:</b> Menu → "Add to Home screen"<br>
+        <b>iOS Safari:</b> Share → "Add to Home Screen"<br>
+        Running as an installed PWA keeps the app open reliably.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────
+let profiles = [];
+let activeTimers = {};   // id → { timeoutId, count, paused, profile }
+let pausedIds = new Set();
+
+const COND_TYPES = [
+  {id:'textBelow',l:'Text <'},{id:'textAbove',l:'Text >'},
+  {id:'textContains',l:'Contains'},{id:'textNotContains',l:'Not Contains'},
+  {id:'visible',l:'Visible'},{id:'hidden',l:'Hidden'},
+  {id:'attrBelow',l:'Attr <'},{id:'attrAbove',l:'Attr >'},
+  {id:'styleWidthBelow',l:'Width% <'},
+];
+const NEEDS_VAL  = ['textBelow','textAbove','textContains','textNotContains','attrBelow','attrAbove','styleWidthBelow'];
+const NEEDS_ATTR = ['attrBelow','attrAbove'];
+
+// ── Init ──────────────────────────────────────────────────────────────────
+function init() {
+  try {
+    const saved = localStorage.getItem('acpro_profiles_v4');
+    if (saved) {
+      profiles = JSON.parse(saved);
+      // Reset running state on load
+      profiles.forEach(p => { p.running = false; p.count = 0; });
+    }
+  } catch(e) {}
+  if (profiles.length === 0) addProfile(false);
+  render();
+  addLog('AutoClicker Pro v4 Mobile loaded · ' + profiles.length + ' profile(s)', 'info');
+}
+
+// ── Persistence ───────────────────────────────────────────────────────────
+function saveProfiles() {
+  try { localStorage.setItem('acpro_profiles_v4', JSON.stringify(profiles)); } catch(e) {}
+}
+function saveAndRender() { saveProfiles(); render(); }
+
+// ── Tab switching ─────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab,.page').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('page-' + t.dataset.tab).classList.add('active');
+  });
+});
+
+// ── Global controls ───────────────────────────────────────────────────────
+document.getElementById('addBtn').addEventListener('click', () => addProfile(true));
+document.getElementById('clearLogBtn').addEventListener('click', () => {
+  const w = document.getElementById('logWrap');
+  w.innerHTML = '<div class="logrow"><span class="logt">--:--:--</span><span class="logm info">Log cleared.</span></div>';
+});
+
+document.getElementById('pauseAllBtn').addEventListener('click', () => {
+  const anyRunning = Object.keys(activeTimers).some(id => !pausedIds.has(id));
+  if (anyRunning) {
+    Object.keys(activeTimers).forEach(id => { if (!pausedIds.has(id)) pauseProfile(id); });
+    addLog('All profiles paused', 'warn');
+  } else {
+    [...pausedIds].forEach(id => resumeProfile(id));
+    addLog('All profiles resumed', 'info');
+  }
+  render();
+});
+
+document.getElementById('stopAllBtn').addEventListener('click', () => {
+  Object.keys(activeTimers).forEach(id => stopProfile(id));
+  profiles.forEach(p => { p.running = false; p.count = 0; });
+  saveAndRender();
+  addLog('All profiles stopped', 'stop');
+});
+
+// ── Profile management ────────────────────────────────────────────────────
+function addProfile(save = true) {
+  profiles.push({
+    id: 'p_' + Date.now(),
+    name: 'Skill ' + (profiles.length + 1),
+    action: { type: 'key', key: '', code: '', keyCode: 0, holdMs: 300, clickMode: 'left', selector: '', x: null, y: null },
+    intervalVal: 30, intervalUnit: 's', intervalMs: 30000,
+    jitter: 15,
+    condition: { type: 'always', selector: '', value: '', attr: '', missingMeans: 'true' },
+    running: false, count: 0, expanded: true,
+  });
+  if (save) saveAndRender();
+}
+
+function deleteProfile(id) {
+  stopProfile(id);
+  profiles = profiles.filter(p => p.id !== id);
+  saveAndRender();
+}
+
+// ── Scheduling (runs on this page) ────────────────────────────────────────
+function startProfile(p) {
+  stopProfile(p.id);
+  p.count = 0; p.running = true;
+  p.intervalMs = toMs(p.intervalVal, p.intervalUnit);
+  pausedIds.delete(p.id);
+  activeTimers[p.id] = { count: 0, paused: false, profile: p };
+  scheduleNext(p.id);
+  saveAndRender();
+  const a = p.action;
+  const desc = a.type === 'key' ? `key [${a.key || '?'}]`
+             : a.type === 'keyhold' ? `hold [${a.key || '?'}] ${a.holdMs}ms`
+             : a.type === 'xy' ? `XY(${a.x},${a.y})`
+             : a.clickMode || 'click';
+  addLog(`Started "${p.name}" — ${desc} every ${p.intervalVal}${p.intervalUnit} ±${p.jitter}%`, 'key');
+}
+
+function scheduleNext(id) {
+  const state = activeTimers[id];
+  if (!state) return;
+  if (state.paused) return;
+  const p = state.profile;
+  const base = p.intervalMs;
+  const deviation = base * ((p.jitter || 0) / 100);
+  const delay = Math.max(100, base - deviation + Math.random() * deviation * 2);
+
+  state.timeoutId = setTimeout(() => {
+    if (!activeTimers[id] || activeTimers[id].paused) return;
+    const condMet = checkCondition(p.condition);
+    if (!condMet) {
+      addLog(`[${p.name}] condition not met — skipped`, 'warn');
+      scheduleNext(id);
+      return;
+    }
+    doAction(p.action);
+    state.count++;
+    p.count = state.count;
+    // Update count display without full re-render
+    const el = document.getElementById('cnt-' + id);
+    if (el) el.textContent = state.count;
+    // Flash the bar
+    const bar = document.querySelector(`.pcard[data-id="${id}"] .cbar`);
+    if (bar) { bar.style.background = '#00ff99'; setTimeout(() => { if (bar) bar.style.background = ''; }, 80); }
+    scheduleNext(id);
+  }, delay);
+}
+
+function pauseProfile(id) {
+  if (!activeTimers[id]) return;
+  activeTimers[id].paused = true;
+  pausedIds.add(id);
+  clearTimeout(activeTimers[id].timeoutId);
+  const p = profiles.find(x => x.id === id);
+  if (p) { /* keep running=true */ }
+}
+
+function resumeProfile(id) {
+  if (!activeTimers[id]) return;
+  activeTimers[id].paused = false;
+  pausedIds.delete(id);
+  scheduleNext(id);
+}
+
+function stopProfile(id) {
+  if (activeTimers[id]) {
+    clearTimeout(activeTimers[id].timeoutId);
+    delete activeTimers[id];
+  }
+  pausedIds.delete(id);
+  const p = profiles.find(x => x.id === id);
+  if (p) { p.running = false; }
+}
+
+// ── Action executor (runs in THIS tab) ───────────────────────────────────
+function doAction(action) {
+  const el = document.activeElement || document.body;
+
+  if (action.type === 'key' || action.type === 'keyhold') {
+    const keyOpts = {
+      key: action.key || ' ',
+      code: action.code || ('Key' + (action.key || ' ').toUpperCase()),
+      keyCode: action.keyCode || 0,
+      which: action.keyCode || 0,
+      bubbles: true, cancelable: true,
+    };
+    el.dispatchEvent(new KeyboardEvent('keydown', keyOpts));
+    if (action.type === 'keyhold' && action.holdMs > 0) {
+      setTimeout(() => el.dispatchEvent(new KeyboardEvent('keyup', keyOpts)), action.holdMs);
+    } else {
+      el.dispatchEvent(new KeyboardEvent('keypress', keyOpts));
+      el.dispatchEvent(new KeyboardEvent('keyup', keyOpts));
+    }
+    return;
+  }
+
+  const opts = { bubbles: true, cancelable: true, view: window };
+
+  if (action.type === 'xy') {
+    const x = action.x || 0, y = action.y || 0;
+    const target = document.elementFromPoint(x, y) || document.body;
+    const o = { ...opts, clientX: x, clientY: y, screenX: x, screenY: y };
+    target.dispatchEvent(new MouseEvent('mousemove', o));
+    target.dispatchEvent(new MouseEvent('mousedown', o));
+    target.dispatchEvent(new MouseEvent('mouseup', o));
+    target.dispatchEvent(new MouseEvent('click', o));
+    return;
+  }
+
+  // CSS selector or center of screen
+  let target;
+  if (action.selector?.trim()) {
+    target = document.querySelector(action.selector.trim());
+    if (!target) { addLog(`Selector "${action.selector}" not found`, 'warn'); return; }
+  } else {
+    target = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2) || document.body;
+  }
+  const mode = action.clickMode || 'left';
+  if (mode === 'right') {
+    target.dispatchEvent(new MouseEvent('contextmenu', opts));
+  } else if (mode === 'double') {
+    target.dispatchEvent(new MouseEvent('click', opts));
+    target.dispatchEvent(new MouseEvent('dblclick', opts));
+  } else {
+    target.dispatchEvent(new MouseEvent('mousedown', opts));
+    target.dispatchEvent(new MouseEvent('mouseup', opts));
+    target.dispatchEvent(new MouseEvent('click', opts));
+  }
+}
+
+// ── Condition check ───────────────────────────────────────────────────────
+function checkCondition(condition) {
+  if (!condition || condition.type === 'always') return true;
+  try {
+    const el = document.querySelector(condition.selector);
+    if (!el) return condition.missingMeans === 'true';
+    if (condition.type === 'textBelow') return parseFloat(el.textContent.replace(/[^0-9.]/g,'')) < parseFloat(condition.value);
+    if (condition.type === 'textAbove') return parseFloat(el.textContent.replace(/[^0-9.]/g,'')) > parseFloat(condition.value);
+    if (condition.type === 'textContains') return el.textContent.includes(condition.value);
+    if (condition.type === 'textNotContains') return !el.textContent.includes(condition.value);
+    if (condition.type === 'visible') { const s=getComputedStyle(el); return s.display!=='none'&&s.visibility!=='hidden'&&s.opacity!=='0'; }
+    if (condition.type === 'hidden') { const s=getComputedStyle(el); return s.display==='none'||s.visibility==='hidden'||s.opacity==='0'; }
+    if (condition.type === 'attrBelow') return parseFloat(el.getAttribute(condition.attr)||'0') < parseFloat(condition.value);
+    if (condition.type === 'attrAbove') return parseFloat(el.getAttribute(condition.attr)||'0') > parseFloat(condition.value);
+    if (condition.type === 'styleWidthBelow') return parseFloat(el.style.width||'100') < parseFloat(condition.value);
+  } catch(e) {}
+  return true;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+function render() {
+  const activeCount = Object.keys(activeTimers).length;
+  const pausedCount = pausedIds.size;
+  document.getElementById('statActive').textContent = activeCount;
+  document.getElementById('statPaused').textContent = pausedCount;
+
+  const list = document.getElementById('profilesList');
+  list.innerHTML = '';
+  if (profiles.length === 0) {
+    list.innerHTML = '<div class="empty">No profiles yet.<br>Tap + ADD PROFILE to create one.</div>';
+    return;
+  }
+  profiles.forEach(p => {
+    const div = buildCard(p);
+    list.appendChild(div);
+  });
+}
+
+function buildCard(p) {
+  const isRunning = !!activeTimers[p.id];
+  const isPaused = pausedIds.has(p.id);
+
+  let metaStr = '';
+  const a = p.action;
+  if (a.type === 'key') metaStr = `KEY [${a.key || '?'}] · ${p.intervalVal}${p.intervalUnit}`;
+  else if (a.type === 'keyhold') metaStr = `HOLD [${a.key || '?'}] ${a.holdMs}ms · ${p.intervalVal}${p.intervalUnit}`;
+  else if (a.type === 'xy') metaStr = `XY(${a.x ?? '?'},${a.y ?? '?'}) · ${p.intervalVal}${p.intervalUnit}`;
+  else metaStr = `${(a.clickMode || 'left').toUpperCase()} · ${p.intervalVal}${p.intervalUnit}`;
+
+  const div = document.createElement('div');
+  div.className = `pcard${isRunning && !isPaused ? ' running' : ''}${isPaused ? ' paused' : ''}`;
+  div.dataset.id = p.id;
+
+  // Build action section
+  let actionSection = '';
+  const isKey = a.type === 'key' || a.type === 'keyhold';
+  const isXY = a.type === 'xy';
+  const isClick = !isKey && !isXY;
+
+  if (isKey) {
+    actionSection = `
+      <div class="key-section">
+        <div class="flabel">KEY TO PRESS</div>
+        <div class="key-capture-wrap">
+          <div class="key-display js-key-display" title="Tap to set key">
+            ${a.key ? (a.key.length === 1 ? a.key.toUpperCase() : a.key) : 'TAP TO SET'}
+          </div>
+        </div>
+        <div class="frow" style="margin-top:6px;">
+          <div class="f">
+            <div class="flabel">OR TYPE KEY MANUALLY</div>
+            <input type="text" class="js-key-manual" placeholder="e.g. 1, 2, Space, F1, q" value="${esc(a.key)}" maxlength="20"/>
+          </div>
+        </div>
+        ${a.type === 'keyhold' ? `
+        <div class="hold-row">
+          <span class="hold-label">HOLD</span>
+          <input type="range" class="js-hold-range" min="50" max="2000" step="50" value="${a.holdMs}"/>
+          <span class="hold-val js-hold-val">${a.holdMs}ms</span>
+        </div>` : ''}
+      </div>`;
+  } else if (isXY) {
+    actionSection = `
+      <div class="xy-info">
+        <b>ℹ️ How to find coordinates on mobile:</b>
+        Open DevTools console and run:<br>
+        <code>document.addEventListener('click', e => alert(e.clientX+','+e.clientY))</code><br>
+        then tap your target element.
+      </div>
+      <div class="xy-coords-row">
+        <div class="f"><div class="flabel">X (px)</div><input type="number" class="js-xy-x" placeholder="0" value="${a.x ?? ''}"/></div>
+        <div class="f"><div class="flabel">Y (px)</div><input type="number" class="js-xy-y" placeholder="0" value="${a.y ?? ''}"/></div>
+      </div>`;
+  } else {
+    actionSection = `
+      <div class="frow">
+        <div class="f">
+          <div class="flabel">CLICK TYPE</div>
+          <select class="js-clickmode">
+            <option value="left"   ${a.clickMode==='left'   ?'selected':''}>Left Click</option>
+            <option value="right"  ${a.clickMode==='right'  ?'selected':''}>Right Click</option>
+            <option value="double" ${a.clickMode==='double' ?'selected':''}>Double Click</option>
+          </select>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="f">
+          <div class="flabel">CSS SELECTOR (optional)</div>
+          <input type="text" class="js-selector" placeholder="#my-button or .skill-btn" value="${esc(a.selector)}"/>
+        </div>
+      </div>`;
+  }
+
+  div.innerHTML = `
+    <div class="cbar"></div>
+    <div class="chead js-head">
+      <div class="cdot"></div>
+      <input class="cname js-name" type="text" value="${esc(p.name)}" placeholder="Profile name"/>
+      <span class="cmeta">${metaStr}</span>
+      <span class="ccount" id="cnt-${p.id}">${p.count || 0}</span>
+      <span class="cchev">${p.expanded ? '▲' : '▼'}</span>
+    </div>
+    <div class="cbody ${p.expanded ? 'open' : ''}">
+      <!-- Action type chips -->
+      <div class="mode-row">
+        <div class="mchip js-atype ${a.type==='key'     ?'sel':''}" data-v="key">⌨ KEY PRESS</div>
+        <div class="mchip js-atype ${a.type==='keyhold' ?'sel':''}" data-v="keyhold">⌨ KEY HOLD</div>
+        <div class="mchip js-atype ${a.type==='click'   ?'sel':''}" data-v="click">🖱 CLICK</div>
+        <div class="mchip js-atype ${a.type==='xy'      ?'sel':''}" data-v="xy">📍 XY</div>
+      </div>
+
+      ${actionSection}
+
+      <!-- Interval -->
+      <div class="frow" style="margin-top:10px;">
+        <div class="f">
+          <div class="flabel">INTERVAL</div>
+          <div class="ival-wrap">
+            <input type="number" class="js-ival" value="${p.intervalVal}" min="0.1" step="0.1" style="flex:1;"/>
+            <select class="js-iunit" style="width:70px;flex:0 0 70px;">
+              <option value="ms" ${p.intervalUnit==='ms'?'selected':''}>ms</option>
+              <option value="s"  ${p.intervalUnit==='s' ?'selected':''}>s</option>
+              <option value="m"  ${p.intervalUnit==='m' ?'selected':''}>min</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jitter -->
+      <div class="jrow">
+        <span class="hold-label">JITTER</span>
+        <input type="range" class="js-jitter" min="0" max="50" step="1" value="${p.jitter}"/>
+        <span class="jval">${p.jitter}%</span>
+      </div>
+
+      <!-- Condition -->
+      <label class="cond-toggle">
+        <input type="checkbox" class="js-cond-en" ${p.condition.type !== 'always' ? 'checked' : ''}/>
+        CONDITION — only fire when…
+      </label>
+      <div class="cond-body ${p.condition.type !== 'always' ? 'open' : ''}">
+        <div class="frow">
+          <div class="f">
+            <div class="flabel">WATCH SELECTOR</div>
+            <input type="text" class="js-csel" placeholder="#hp or .buff-icon" value="${esc(p.condition.selector)}"/>
+          </div>
+        </div>
+        <div class="flabel" style="margin-top:8px;">TYPE</div>
+        <div class="tag-row">
+          ${COND_TYPES.map(c => `<div class="tag js-ctag ${p.condition.type===c.id?'sel':''}" data-v="${c.id}">${c.l}</div>`).join('')}
+        </div>
+        <div class="frow js-cval-row" style="${NEEDS_VAL.includes(p.condition.type) ? '' : 'display:none'}">
+          <div class="f"><div class="flabel">VALUE</div><input type="text" class="js-cval" placeholder="e.g. 30" value="${esc(p.condition.value)}"/></div>
+          <div class="f js-cattr-wrap" style="${NEEDS_ATTR.includes(p.condition.type) ? '' : 'display:none'}">
+            <div class="flabel">ATTRIBUTE</div><input type="text" class="js-cattr" placeholder="data-hp" value="${esc(p.condition.attr)}"/>
+          </div>
+        </div>
+        <div class="frow"><div class="f"><div class="flabel">IF MISSING</div>
+          <select class="js-cmiss">
+            <option value="true"  ${p.condition.missingMeans==='true' ?'selected':''}>True → fire</option>
+            <option value="false" ${p.condition.missingMeans==='false'?'selected':''}>False → skip</option>
+          </select>
+        </div></div>
+      </div>
+
+      <!-- Card actions -->
+      <div class="cactions">
+        ${isRunning
+          ? `<button class="btn btn-pause js-pause">${isPaused ? '▶ RESUME' : '⏸ PAUSE'}</button>
+             <button class="btn btn-stop js-stop">■ STOP</button>`
+          : `<button class="btn btn-start js-start">▶ START</button>`}
+        <button class="btn btn-sm js-del">✕</button>
+      </div>
+    </div>
+  `;
+
+  wireCard(div, p);
+  return div;
+}
+
+function wireCard(div, p) {
+  const q = s => div.querySelector(s);
+
+  q('.js-head').addEventListener('click', (e) => {
+    if (['INPUT','SELECT','BUTTON'].includes(e.target.tagName)) return;
+    p.expanded = !p.expanded; saveAndRender();
+  });
+
+  q('.js-name').addEventListener('change', e => { p.name = e.target.value.trim() || 'Skill'; saveProfiles(); render(); });
+
+  div.querySelectorAll('.js-atype').forEach(chip => {
+    chip.addEventListener('click', () => { p.action.type = chip.dataset.v; saveAndRender(); });
+  });
+
+  // Key capture — on mobile, use the manual input
+  const keyDisplay = q('.js-key-display');
+  const keyManual = q('.js-key-manual');
+  if (keyDisplay && keyManual) {
+    keyDisplay.addEventListener('click', () => keyManual.focus());
+    keyManual.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { keyManual.blur(); return; }
+      e.preventDefault();
+      p.action.key = e.key;
+      p.action.code = e.code;
+      p.action.keyCode = e.keyCode;
+      keyManual.value = e.key;
+      keyDisplay.textContent = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+      keyManual.blur();
+      saveProfiles(); render();
+    });
+    keyManual.addEventListener('change', e => {
+      const v = e.target.value.trim();
+      if (!v) return;
+      p.action.key = v;
+      p.action.code = v.length === 1 ? 'Key' + v.toUpperCase() : v;
+      p.action.keyCode = v.charCodeAt(0) || 0;
+      saveProfiles(); render();
+    });
+  }
+
+  const holdRange = q('.js-hold-range');
+  if (holdRange) holdRange.addEventListener('input', e => {
+    p.action.holdMs = parseInt(e.target.value);
+    const v = div.querySelector('.js-hold-val');
+    if (v) v.textContent = p.action.holdMs + 'ms';
+    saveProfiles();
+  });
+
+  q('.js-clickmode')?.addEventListener('change', e => { p.action.clickMode = e.target.value; saveProfiles(); render(); });
+  q('.js-selector')?.addEventListener('change', e => { p.action.selector = e.target.value.trim(); saveProfiles(); });
+
+  q('.js-xy-x')?.addEventListener('change', e => { p.action.x = parseInt(e.target.value); saveProfiles(); render(); });
+  q('.js-xy-y')?.addEventListener('change', e => { p.action.y = parseInt(e.target.value); saveProfiles(); render(); });
+
+  q('.js-ival').addEventListener('change', e => {
+    p.intervalVal = parseFloat(e.target.value) || 2;
+    p.intervalMs = toMs(p.intervalVal, p.intervalUnit);
+    saveProfiles(); render();
+  });
+  q('.js-iunit').addEventListener('change', e => {
+    p.intervalUnit = e.target.value;
+    p.intervalMs = toMs(p.intervalVal, p.intervalUnit);
+    saveProfiles(); render();
+  });
+
+  q('.js-jitter').addEventListener('input', e => {
+    p.jitter = parseInt(e.target.value);
+    div.querySelector('.jval').textContent = p.jitter + '%';
+    saveProfiles();
+  });
+
+  q('.js-cond-en').addEventListener('change', e => {
+    p.condition.type = e.target.checked ? 'textBelow' : 'always';
+    saveAndRender();
+  });
+  q('.js-csel')?.addEventListener('change', e => { p.condition.selector = e.target.value.trim(); saveProfiles(); });
+  div.querySelectorAll('.js-ctag').forEach(tag => tag.addEventListener('click', () => {
+    p.condition.type = tag.dataset.v; saveAndRender();
+  }));
+  q('.js-cval')?.addEventListener('change', e => { p.condition.value = e.target.value; saveProfiles(); });
+  q('.js-cattr')?.addEventListener('change', e => { p.condition.attr = e.target.value; saveProfiles(); });
+  q('.js-cmiss')?.addEventListener('change', e => { p.condition.missingMeans = e.target.value; saveProfiles(); });
+
+  q('.js-start')?.addEventListener('click', () => {
+    const idx = profiles.findIndex(x => x.id === p.id);
+    if (idx >= 0) startProfile(profiles[idx]);
+  });
+  q('.js-pause')?.addEventListener('click', () => {
+    if (pausedIds.has(p.id)) {
+      resumeProfile(p.id);
+      addLog(`Resumed "${p.name}"`, 'info');
+    } else {
+      pauseProfile(p.id);
+      addLog(`Paused "${p.name}"`, 'warn');
+    }
+    render();
+  });
+  q('.js-stop')?.addEventListener('click', () => {
+    addLog(`Stopped "${p.name}" · ${p.count} total`, 'stop');
+    stopProfile(p.id);
+    saveAndRender();
+  });
+  q('.js-del').addEventListener('click', () => {
+    if (confirm(`Delete profile "${p.name}"?`)) deleteProfile(p.id);
+  });
+}
+
+// ── Log ───────────────────────────────────────────────────────────────────
+function addLog(msg, type = 'info') {
+  const wrap = document.getElementById('logWrap');
+  if (!wrap) return;
+  const now = new Date();
+  const t = [now.getHours(), now.getMinutes(), now.getSeconds()].map(n => String(n).padStart(2,'0')).join(':');
+  const row = document.createElement('div');
+  row.className = 'logrow';
+  row.innerHTML = `<span class="logt">${t}</span><span class="logm ${type}">${esc(msg)}</span>`;
+  wrap.appendChild(row);
+  wrap.scrollTop = wrap.scrollHeight;
+  // Cap log at 200 entries
+  while (wrap.children.length > 200) wrap.removeChild(wrap.firstChild);
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────
+function toMs(val, unit) {
+  if (unit === 'ms') return Math.max(100, val);
+  if (unit === 's')  return Math.max(100, val * 1000);
+  if (unit === 'm')  return Math.max(100, val * 60000);
+  return 2000;
+}
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Service Worker registration ───────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+init();
+</script>
+</body>
+</html>
